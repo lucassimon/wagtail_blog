@@ -1,0 +1,23 @@
+{% load wagtailimages_tags static %}
+
+<div class="container-carousel">
+
+	<div id="{{ id_prefix }}-gallery" class="royalSlider rsDefault visibleNearby">
+
+		{% for item in self %}
+
+			{% image item.image height-400 as carouselimagedata %}
+			<a
+				class="rsImg"
+				data-rsw="{{ carouselimagedata.width }}"
+				data-rsh="{{ carouselimagedata.height }}"
+				href="{{ carouselimagedata.url }}"
+			>
+				{{ item.caption }}
+			</a>
+
+		{% endfor %}
+
+	</div>
+
+</div>

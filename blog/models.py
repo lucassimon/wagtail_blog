@@ -1,3 +1,9 @@
+# -*- coding:utf-8 -*-
+from __future__ import unicode_literals
+# Stdlib imports
+import datetime
+
+# Core Django imports
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
@@ -7,17 +13,26 @@ from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
 from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
-from wagtail.wagtailcore.fields import RichTextField
+
+# Third-party app imports
 from wagtail.wagtailcore.models import Page
 from wagtail.wagtailadmin.edit_handlers import (
-    FieldPanel, InlinePanel, MultiFieldPanel, FieldRowPanel)
+    FieldPanel, InlinePanel, MultiFieldPanel, FieldRowPanel,
+    StreamFieldPanel
+)
+from wagtail.wagtailcore import blocks
+from wagtail.wagtailcore.fields import StreamField
+from wagtail.wagtailimages.blocks import ImageChooserBlock
+from wagtail.wagtailembeds.blocks import EmbedBlock
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.wagtailsnippets.models import register_snippet
 from wagtail.wagtailsearch import index
 from taggit.models import TaggedItemBase, Tag
 from modelcluster.tags import ClusterTaggableManager
 from modelcluster.fields import ParentalKey
-import datetime
+
+# Imports from your apps
+from .blocks import ImageCarouselBlock, GoogleMapBlock
 
 
 COMMENTS_APP = getattr(settings, 'COMMENTS_APP', None)
@@ -190,7 +205,35 @@ def limit_author_choices():
 
 
 class BlogPage(Page):
-    body = RichTextField(verbose_name=_('body'), blank=True)
+
+    intro = models.CharField(max_length=512, blank=True, null=True)
+
+    body = StreamField(
+        [
+            (_(u'heading'), blocks.CharBlock(classname="full title")),
+            (_(u'paragraph'), blocks.RichTextBlock()),
+            (_(u'image'), ImageChooserBlock(icon="image")),
+            (_(u'google_map'), GoogleMapBlock()),
+            (
+                'embedded_video',
+                EmbedBlock(
+                    icon="media",
+                    classname="full title"
+                )
+            ),
+            (
+                'image_carousel',
+                blocks.ListBlock(
+                    ImageCarouselBlock(),
+                    template='core/blocks/carousel.html',
+                    icon="image"
+                )
+            ),
+        ],
+        null=True,
+        blank=True
+    )
+
     tags = ClusterTaggableManager(through=BlogPageTag, blank=True)
     date = models.DateField(
         _("Post date"), default=datetime.datetime.today,
@@ -259,10 +302,11 @@ class BlogPage(Page):
 
 BlogPage.content_panels = [
     FieldPanel('title', classname="full title"),
+    FieldPanel('intro', classname="full"),
     MultiFieldPanel([
         FieldPanel('tags'),
         InlinePanel('categories', label=_("Categories")),
     ], heading="Tags and Categories"),
     ImageChooserPanel('header_image'),
-    FieldPanel('body', classname="full"),
+    StreamFieldPanel('body', classname="full"),
 ]

@@ -13,12 +13,24 @@
 
 {% if include_context == "index_page" %}
 <div class="blog-intro">
-    {{ blog.body|richtext|truncatewords_html:70 }} 
+    {{ blog.intro|richtext }} 
     <a href="{% pageurl blog %}">Read the rest of this entry &raquo;</a>
 </div>
 {% else %}
 <div class="blog-body">
-    {{ blog.body|richtext }}
+	{% for block in self.body %}
+		{% if block.block_type == 'heading' %}
+			<h2>{{ block.value }}</h2>
+		{% elif block.block_type == 'embedded_video' %}
+			<div class="col-md-6 col-md-offset-3">
+				<div class="embed-responsive embed-responsive-4by3">
+					{{ block }}
+				</div>
+			</div>
+		{% else %}
+			<section class="block-{{ block.block_type }}">{{ block }}</section>
+		{% endif %}
+	{% endfor %}
 </div>
 {% endif %}
 
