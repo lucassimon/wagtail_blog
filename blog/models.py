@@ -308,5 +308,5 @@ BlogPage.content_panels = [
         InlinePanel('categories', label=_("Categories")),
     ], heading="Tags and Categories"),
     ImageChooserPanel('header_image'),
-    StreamFieldPanel('body', classname="full"),
+    StreamFieldPanel('body'),
 ]
