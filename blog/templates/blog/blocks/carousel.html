@@ -1,23 +1,12 @@
 {% load wagtailimages_tags static %}
 
-<div class="container-carousel">
+{# Use owlcarousel or another slider plugin #}
+<div class="owl-carousel">
+	{% for item in self %}
+		<div>
+			{% image item.image height-350 as carouselimagedata %}
+			<img src="{{ carouselimagedata.url }}">
+		</div>
 
-	<div id="{{ id_prefix }}-gallery" class="royalSlider rsDefault visibleNearby">
-
-		{% for item in self %}
-
-			{% image item.image height-400 as carouselimagedata %}
-			<a
-				class="rsImg"
-				data-rsw="{{ carouselimagedata.width }}"
-				data-rsh="{{ carouselimagedata.height }}"
-				href="{{ carouselimagedata.url }}"
-			>
-				{{ item.caption }}
-			</a>
-
-		{% endfor %}
-
-	</div>
-
+	{% endfor %}
 </div>
